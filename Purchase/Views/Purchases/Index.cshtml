@@ -1,0 +1,146 @@
+﻿@model IEnumerable<Purchase.ViewModels.PurchaseHeaderVM>
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Xsrf
+
+@functions
+{
+    public string GetAntiXsrfRequestToken()
+    {
+        return Xsrf.GetAndStoreTokens(Context).RequestToken;
+    }
+}
+
+@{
+    //var token = GetAntiXsrfRequestToken();
+    ViewData["Title"] = "Index";
+}
+
+<div class="row">
+    <div id="purchaseCardsDiv" class="col-4">
+        @foreach (var item in Model)
+        {
+            <div class="card mb-3" style="width: 30rem;">
+                <div class="card-body">
+                    <h6 class="float-end">@item.PurchaseDate.ToString("dd/MM/yyyy")</h6>
+                    <h5 class="card-title mb-1">@item.CustomerName</h5>
+                    <h6 class="card-subtitle text-body-secondary mb-1">@item.CustomerPhoneNumber</h6>
+                    <h6 class="card-subtitle text-body-secondary mb-1">@item.CustomerEmailAddress</h6>
+                    <h6 class="card-subtitle text-body-secondary float-end mb-2">@item.InvoiceNumber</h6>
+                    
+                    <p class="card-text">
+                        <table class="table table-striped table-borderless">
+                            <tbody>
+                                @foreach (var pdvm in item.PurchaseDetails)
+                                {
+                                    <tr>
+                                        <td>
+                                            @pdvm.ProductName
+                                        </td>
+                                        <td>
+                                            @pdvm.Quantity&nbsp;@pdvm.MeasurementUnitName
+                                        </td>
+                                        <td>
+                                            @pdvm.UnitPrice
+                                        </td>
+                                        <td>
+                                            @pdvm.TotalPrice
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </p>
+                    <hr />
+                    <h6 class="mb-2">Total Amount:&nbsp;@item.TotalAmount</h6>
+                </div>
+            </div>
+        }
+    </div>
+    <div class="col-8">
+        <div class="row mb-5 border-1 border-info">
+            <h4>Customer Info.</h4>
+            <hr />
+            <div class="row">
+                <div class="clearfix">
+                    <div class="col float-start me-1">
+                        <input id="customerNameInput" type="text" class="form-control" placeholder="Customer name">
+                    </div>
+                    <div class="col float-start ms-1 me-1">
+                        <input id="customerEmailInput" type="email" class="form-control" placeholder="Customer email">
+                    </div>
+                    <div class="col float-start ms-1 me-1">
+                        <input id="customerPhoneInput" type="tel" class="form-control" placeholder="Customer phone no.">
+                    </div>
+                    <div class="col float-start ms-1">
+                        <input id="purchaseDateInput" type="date" class="form-control" title="Purchase date">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mb-5 border-1 border-info">
+            <h4>Select Product</h4>
+            <hr />
+            <div class="clearfix">
+                <div class="col float-start me-1">
+                    <select class="form-select" id="productSelect" asp-items="ViewBag.ProductOptions">
+                        <option disabled selected>Choose a product</option>
+                    </select>
+                </div>
+                <div class="col float-start ms-1 me-1">
+                    <input id="quantityInput" type="number" class="form-control" placeholder="Quantity" onchange="calculateTotalPrice()" />
+                </div>
+                <div class="col float-start ms-1 me-1">
+                    <select class="form-select" id="measurementUnitSelect" asp-items="ViewBag.MeasurementUnitOptions">
+                        <option disabled selected>Choose a unit</option>
+                    </select>
+                </div>
+                <div class="col float-start ms-1 me-1">
+                    <input id="unitPriceInput" type="number" class="form-control" placeholder="Unit price" onchange="calculateTotalPrice()" />
+                </div>
+                <div class="col float-start ms-1 me-1">
+                    <span id="totalPriceSpan" type="text" class="form-control">0.00</span>
+                </div>
+                <div class="col float-start ms-1">
+                    <button class="btn btn-outline-primary" type="button" onclick="getPurchaseDetailPartialView('@GetAntiXsrfRequestToken()')">Add</button>
+                </div>
+            </div>
+        </div>
+        <div class="row mb-3 border-1 border-info">
+            <h4>Selected Product to purchase</h4>
+            <hr />
+            <table class="table table-responsive table-striped">
+                <thead>
+                    <tr>
+                        <th>
+                            Product
+                        </th>
+                        <th>
+                            Quantity
+                        </th>
+                        <th>
+                            Unit
+                        </th>
+                        <th>
+                            Unit Price
+                        </th>
+                        <th>
+                            Total Price
+                        </th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="pdvm_tbody"></tbody>
+            </table>
+            <hr />
+            <div class="input-group mb-3">
+                <span class="input-group-text" id="totalAmountAddon">Total Bill: </span>
+                <input id="totalAmount" type="text" class="form-control" placeholder="0.00" aria-label="TotalAmount" aria-describedby="totalAmountAddon" readonly>
+            </div>
+        </div>
+        <div class="row">
+            <div class="d-grid gap-2">
+                <button id="purchaseOrderSubmitButton" class="btn btn-primary" type="button" onclick="submitPurchaseOrder('@GetAntiXsrfRequestToken()')">Purchase</button>
+                <button id="purchaseOrderSPSubmitButton" class="btn btn-primary" type="button" onclick="submitPurchaseOrderForSP('@GetAntiXsrfRequestToken()')">Purchase through SP</button>
+            </div>
+        </div>
+    </div>
+</div>

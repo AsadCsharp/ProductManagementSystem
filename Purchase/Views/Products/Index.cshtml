@@ -1,0 +1,70 @@
+﻿@model IEnumerable<Purchase.ViewModels.ProductVM>
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Xsrf
+
+@functions
+{
+    public string GetAntiXsrfRequestToken()
+    {
+        return Xsrf.GetAndStoreTokens(Context).RequestToken;
+    }
+}
+
+@{
+    //var token = GetAntiXsrfRequestToken();
+    ViewData["Title"] = "Index";
+}
+
+<div class="row">
+    <div class="col">
+        <div class="row">
+            <div class="col">
+                <h6>Add new Product</h6>
+                <hr />
+                <input type="hidden" id="hiddenProductIdInput" value="0" />
+                <span class="visually-hidden" id="actionTypeNameForProduct">add</span>
+                <input type="hidden" id="productImageUrl" value="">
+            </div>
+        </div>
+        <div calss="row">
+            <div class="clearfix">
+                <img id="selectedProductImage" src="images/phone_1.jpg" class="col-6 float-end mb-3 ps-2 pe-2" alt="...">
+                <div class="col-6 float-start mb-3 pe-2">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Product</span>
+                        <input id="productNameInput" type="text" class="form-control" placeholder="Product Name" aria-label="Product Name" />
+                    </div>
+                    <input type="file" class="form-control mb-3" id="inputProductImage" onchange="uploadProductImage(this)">
+                    <button class="btn btn-outline-secondary float-end" type="button" id="addProductButton" onclick="addProduct('@GetAntiXsrfRequestToken()')">Add</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <table class="table table-striped table-responsive">
+            <thead>
+                <tr>
+                    <th class="text-center">Name</th>
+                    <th class="text-center">Photo</th>
+                    <th class="text-center"></th>
+                </tr>
+            </thead>
+            <tbody id="productTableBody">
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td class="align-middle">
+                            @item.Name
+                        </td>
+                        <td class="align-middle">
+                            <img src="@item.ImageUrl" class="img-thumbnail" style="width:100px;" />
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-sm text-warning fw-bold" data-id="@item.Id" data-image="@item.ImageUrl" data-name="@item.Name" onclick="editProduct(this)">Edit</button>
+                            <button type="button" class="btn btn-sm text-danger fw-bold" onclick="deleteProduct('@GetAntiXsrfRequestToken()', @item.Id)">Delete</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
